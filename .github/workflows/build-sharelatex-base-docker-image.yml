@@ -1,4 +1,4 @@
-name: Build Sharelatex Base Docker Image
+name: Build Docker Image
 
 on:
   schedule:
@@ -9,6 +9,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    
     permissions:
       contents: write
 
@@ -71,14 +72,29 @@ jobs:
         run: |
           git clone https://github.com/overleaf/overleaf.git
           
-      - name: Build and push
+      - name: Build and push sharelatex base
         uses: docker/build-push-action@v4
         if: steps.check_sharelatex_version.outputs.latest_sharelatex_version != ''
         with:
           file: ./overleaf/server-ce/Dockerfile-base
-          context: .
+          context: ./overleaf
           platforms: linux/arm64
           push: true
           tags: |
             ${{ secrets.DOCKER_NS }}/sharelatex-base:${{ steps.check_sharelatex_version.outputs.latest_sharelatex_version }}
             ${{ secrets.DOCKER_NS }}/sharelatex-base:latest
+
+      - name: Build and push sharelatex
+        uses: docker/build-push-action@v4
+        if: steps.check_sharelatex_version.outputs.latest_sharelatex_version != ''
+        with:
+          file: ./overleaf/server-ce/Dockerfile
+          context: ./overleaf
+          platforms: linux/arm64
+          push: true
+          build-args: |
+            SHARELATEX_BASE_TAG=${{ secrets.DOCKER_NS }}/sharelatex-base:latest
+            MONOREPO_REVISION=${{ steps.check_sharelatex_version.outputs.latest_sharelatex_version }}
+          tags: |
+            ${{ secrets.DOCKER_NS }}/sharelatex:${{ steps.check_sharelatex_version.outputs.latest_sharelatex_version }}
+            ${{ secrets.DOCKER_NS }}/sharelatex:latest
