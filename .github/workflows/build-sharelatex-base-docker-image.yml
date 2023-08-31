@@ -39,8 +39,8 @@ jobs:
         id: get_sharelatex_version
         run: |
           SHARELATEX_VERSION=$(curl -k -s https://api.github.com/repos/overleaf/overleaf/commits | jq '.[0].sha' | sed s/\"//g | cut -c1-7)
-          echo $VERSION
-          echo "sharelatex_version=$VERSION" >> $GITHUB_OUTPUT
+          echo $SHARELATEX_VERSION
+          echo "sharelatex_version=$SHARELATEX_VERSION" >> $GITHUB_OUTPUT
         
       - name: Check Sharelatex Version
         id: check_sharelatex_version
